@@ -1,5 +1,5 @@
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 import sympy as sp
 
 
@@ -12,7 +12,7 @@ C = np.array([
     [   0.   ,  0.   ,  0.   ,  0.   ,  0.   ,  4.4 ]], np.float64) * 10**9
 
 
-def T(theta):
+def Transform(theta):
     m = np.cos( np.deg2rad(theta) )
     n = np.sin( np.deg2rad(theta) )
     return np.array([
@@ -28,25 +28,31 @@ s[-1, -1] = S[-1, -1]
 
 #Q = np.linalg.inv(S_plane)
 
-
 theta = np.linspace(-90, 90, 100)
 
+T = Transform(theta)
+T_ = np.rollaxis(T, 2)
 
-T_ = np.rollaxis(T(theta), 2)
+S_bar = np.einsum('...jk,kl,...lm->...jm', T.T, s, T_) #[S_bar] = [T.T][S][T]
 
-s_bar = np.ndarray((100,3,3))
-for i, t in enumerate(T_):
-    s_bar[i] = np.dot(t.T, np.dot(s, t))
 
-Q_bar = np.linalg.inv(s_bar)
+
+Q_bar = np.linalg.inv(S_bar)
     
 eps_xyz = np.array([[0,0,1]]).T
 
 sigma_xyz = np.dot(Q_bar, eps_xyz).reshape(100, -1)
 
-plt.plot(theta, sigma_xyz[:, 0]) #blue
-plt.plot(theta, sigma_xyz[:, 1]) #green
-plt.plot(theta, sigma_xyz[:, 2]) #red
+
+
+fig, ax = plt.subplots()
+
+plt.plot(theta, Q_bar[:,0,2], 'k-', label=r'$\bar Q_{16}$') #blue
+plt.plot(theta, Q_bar[:,1,2], 'k--', label=r'$\bar Q_{26}$') #green
+plt.plot(theta, Q_bar[:,2,2], 'k:', label=r'$\bar Q_{66}$') #red
+
+legend = ax.legend(loc='upper right', shadow=True)
+
 plt.show()
 
 
