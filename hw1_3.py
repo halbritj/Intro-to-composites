@@ -40,15 +40,27 @@ nu_xy_x = S16_bar / S11_bar
 nu_xy_y = S26_bar / S22_bar
 
 #https://matplotlib.org/users/mathtext.html  
-fig, ax = plt.subplots()
-ax.plot(theta, nu_xy_x, 'k--', label=r'$\eta_{xy,x}$')
-ax.plot(theta, nu_xy_y, 'k:', label=r'$\eta_{xy,y}$')
+fig, (ax1, ax2) = plt.subplots(2, 1, sharex=True)
 
-plt.title('Coefficients of Mutual Influence of First Kind v. Ply Angle')
-plt.xlabel(r'$\theta$')
-plt.ylabel(r'$\eta_{xy,x}$ and  $\eta_{xy,y}$')
+ax1.plot(theta, nu_xy_x, label=r'$\eta_{xy,x}$')
+ax1.set_title('Coefficients of Mutual Influence of First Kind v. Ply Angle')
+ax1.set_ylabel(r'$\eta_{xy,x}$', fontsize=20)
 
-legend = ax.legend(loc='upper right', shadow=True)
+i = np.where(nu_xy_x == nu_xy_x.max())
+pair = (theta[i], nu_xy_x[i])
+ax1.plot(*pair, 'o')
+ax1.annotate(r'$Max$ $\eta_{xy,x}={%.2f}$, $\theta={%.1f}^\circ$' %pair[::-1], xy=pair)
+
+ax2.plot(theta, nu_xy_y, label=r'$\eta_{xy,y}$')
+ax2.set_ylabel(r'$\eta_{xy,y}$', fontsize=20)
+ax2.set_xlabel(r'$\theta^\circ$', fontsize=15)
+
+i = np.where(nu_xy_y == nu_xy_y.max())
+pair = (theta[i], nu_xy_y[i])
+ax2.plot(*pair, 'o')
+ax2.annotate(r'$Max$ $\eta_{xy,y}={%.2f}$, $\theta={%.1f}^\circ$' %pair[::-1], xy=pair)
+
+plt.xticks(np.linspace(-90, 90, 13))
 
 plt.show()
 
