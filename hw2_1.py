@@ -14,6 +14,9 @@ Wm = 1 - Wf
 rho_m = 1.14 #g/cm**3
 Em = .4*10**6 #psi
 
+
+
+
 rho_c = 1/( (Wf/rho_f) + (Wm/rho_m) )
 Vf = Wf * (rho_c/rho_f)
 
