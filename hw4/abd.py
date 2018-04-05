@@ -1,7 +1,7 @@
 import numpy as np
 import sympy as sp
 
-np.set_printoptions(precision=2)
+np.set_printoptions(precision=4)
 
 def Transform(theta):
     m = np.cos( np.deg2rad(theta) )
@@ -13,7 +13,9 @@ def Transform(theta):
 
 
 
-theta = np.array([90,0,0,90,0,0])
+#theta = np.array([0,90,45,-45,-45,45,90,0])
+#theta = np.array([0,45,90,-45,0,45,90,-45,-45,90,45,0,-45,90,45,0])
+theta = np.array([15,-15,15,-15,15,-15,15,-15,15,-15,15,-15,15,-15,15,-15])
 
 N = theta.size
 h = .15*10**-3

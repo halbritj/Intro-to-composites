@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-np.set_printoptions(precision=3)
+#np.set_printoptions(precision=3)
 
 def Transform(theta):
     m = np.cos( np.deg2rad(theta) )
@@ -11,19 +11,20 @@ def Transform(theta):
         [n**2, m**2, -2*m*n],
         [-m*n, m*n,  m**2 - n**2]], np.float64)
 
-
-theta = np.array([+30,-30,0,0,-30,+30])
+_ = [+53, -53]*8
+theta = np.array(_ + _[::-1])
+#theta = np.array([0,90,30,-30,-30,30,90,0])
 
 N = theta.size
-h = .15*10**-3
+h = .127*10**-3
 H = N*h
 
 Z = np.arange(N+1)*h - .5*H
 
-E1 = 155 * 10**9
-E2 = 12.1 * 10**9
-v12 = .248
-G12 = 4.4 * 10**9
+E1 = 142 * 10**9
+E2 = 10.3 * 10**9
+v12 = .27
+G12 = 7.2 * 10**9
 
 S = np.array([
     [1/E1, -v12/E1, 0],
@@ -46,19 +47,19 @@ ABD[np.abs(ABD) < 10**-8] = 0
 
 abd = np.linalg.inv(ABD)
 
-Xt = 1500 * 10**6
-Xc = 1250 * 10**6
+Xt = 2280 * 10**6
+Xc = 1440 * 10**6
 
-Yt =   50 * 10**6
-Yc =  200 * 10**6
-S  =  100 * 10**6
+Yt =   57 * 10**6
+Yc =  228 * 10**6
+S  =   71 * 10**6
 
 
-alpha_1 = -0.018 * 10**-6
-alpha_2 = 24.3   * 10**-6
+alpha_1 = -0.9 * 10**-6
+alpha_2 = 27.0 * 10**-6
 
-beta_1 =  146 * 10**-6
-beta_2 = 4770 * 10**-6
+beta_1 =  100 * 10**-6
+beta_2 = 2000 * 10**-6
 
 
 alpha = np.array([alpha_1, alpha_2, 0])
@@ -67,7 +68,7 @@ beta  = np.array([beta_1, beta_2, 0])
 alpha_bar = np.matmul(T.T, alpha[:, None]).reshape(N, 1, 3)
 beta_bar = np.matmul(T.T, beta[:, None]).reshape(N, 1, 3)
 
-NM = np.array([[0,0,0,1,0,0]]).T
+NM = np.array([[142240,284480,0,0,0,0]]).T
 
 N_t = np.sum( np.diff(Z)[:, None] *  np.sum( Qbar * alpha_bar, axis=2 ), axis=0)
 M_t = (1/2)*np.sum( np.diff(Z**2)[:, None] *  np.sum( Qbar * alpha_bar, axis=2 ), axis=0)
@@ -75,13 +76,12 @@ NM_t = np.concatenate([N_t, M_t]).reshape(6, 1)
 
 N_m = np.sum( np.diff(Z)[:, None] *  np.sum( Qbar * beta_bar, axis=2 ), axis=0)
 M_m = (1/2)*np.sum( np.diff(Z**2)[:, None] *  np.sum( Qbar * beta_bar, axis=2 ), axis=0)
-
 NM_m = np.concatenate([N_m, M_m]).reshape(6, 1)
 
-dT = -150
+dM = .5
+dT = -140
 
-#NM_r = 25*NM + dT*NM_t
-NM_r = NM
+NM_r = NM + dT*NM_t + dM*NM_m
 
 Z_ = np.hstack((Z[:N//2], Z[-N//2:]))
 
@@ -93,6 +93,7 @@ Strains = surf_strain + np.dot(surf_curve, Z_[None,:])
 Sigma_xyz = np.matmul(Qbar, Strains.T[:,:,None])
 Sigma_123 = np.matmul(T_, Sigma_xyz)
 
+print(Sigma_123[:2] / 10**6)
 
 q = np.linalg.inv(Qbar)
 t = np.linalg.inv(T_)
@@ -188,4 +189,4 @@ S = np.array([
     [.0722]]]) * 10**6
 
 #test = np.matmul(q, np.matmul(t, Sigma_123)).reshape(6,3).T
-test = np.matmul(q, np.matmul(t, S)).reshape(6,3).T
+#test = np.matmul(q, np.matmul(t, S)).reshape(6,3).T

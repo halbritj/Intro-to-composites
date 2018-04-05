@@ -1,30 +1,42 @@
 import numpy as np
+from methods import *
 from sympy import *
 
-np.set_printoptions(precision=3)
 
-ABD = np.array([
-    [  5.037e+07,  1.809e+06,  0        ,  3.231e+03,  0        ,  0        ],
-    [  1.809e+06,  5.037e+07,  0        ,  0        , -3.231e+03,  0        ],
-    [  0        ,  0        ,  2.640e+06,  0        ,  0        ,  0        ],
-    [  3.231e+03,  0        ,  0        ,  1.511    ,  5.400e-02,  0        ],
-    [  0        , -3.231e+03,  0        ,  5.400e-02,  1.511    ,  0        ],
-    [  0        ,  0        ,  0        ,  0        ,  0        ,  7.900e-02]])
+size = 3
+upper = np.array([[0]*(i) + [1]*(size-i) for i in range(size)], bool)
 
+theta = np.array([15,-15,15,-15,15,-15,15,-15,15,-15,15,-15,15,-15,15,-15])
 
+h = .15*10**-3
+E1 = 155 * 10**9
+E2 = 12.1 * 10**9
+v12 = .248
+G12 = 4.4 * 10**9
 
-q0 = 1 #N/m/m
+ABD, abd, Sbar, Qbar, T, T_ = getLaminate(theta, h, E1, E2, v12, G12)
+
+A = ABD[:3, :3]
+B = ABD[-3:, :3]
+D = ABD[-3:, -3:]
+
+A11, A12, A16, A22, A26, A66 = A[upper]
+B11, B12, B16, B22, B26, B66 = B[upper]
+D11, D12, D16, D22, D26, D66 = D[upper]
 
 x,y = var('x y')
 a,b = var('a b')
 m,n = var('m n')
 
+
+q0 = (4500*x*(a-x)**3)/(a*b) #N/m/m
+
 equ = q0 * sin(m*pi*x/a) * sin(n*pi*y/b)
 Q = integrate( integrate(equ, (x,0,a)), (y,0,b)) * 4 * (a*b)**-1
 
 
-a = 1.5 #m
-b = 1.5 #m
+a = 1 #m
+b = 1 #m
 
 subs = {
     'a': a,
@@ -51,18 +63,16 @@ def mn(m_range, n_range):
     m, n = np.meshgrid( np.arange(m_range)+1, np.arange(n_range)+1 )
     return m, n
 
-def a_mn(m, n, Nx=0, Ny=0): #Navier SS1 case
+def a_mn(m, n, Nx=0, Ny=0): #Navier SS2 case
     A = (m*np.pi)/a
     B = (n*np.pi)/b
     
-    c11 = ABD[0,0]*(A**2) + ABD[2,2]*(B**2)
-    c12 = (ABD[0,1] + ABD[2,2])*A*B
-    c13 = -ABD[0,3]*(A**3) - (ABD[0,4] + 2*ABD[2,5])*A*(B**2)
-    c22 = ABD[2,2]*(A**2) + ABD[1,1]*B**2
-    c23 = -ABD[1,4]*(B**3) - (ABD[0,4] + 2*ABD[2,5])*(A**2)*B
-    c33 = ABD[3,3]*(A**4) + 2*(ABD[3,4] + 2*ABD[5,5])*(A**2)*(B**2) + ABD[4,4]*(B**4)
-
-    s33 = Nx*A**2 + Ny*B**2
+    c11 =  A11*(A**2) + A66*(B**2)
+    c12 = (A12 + A66)*A*B
+    c13 = -(3*B16*(A**2) + B26*(B**2))*B
+    c22 = A66*(A**2) + A22*(B**2)
+    c23 = -(B16*(A**2) + 3*B26*(B**2))*A
+    c33 = D11*(A**4) + 2*(D12 + 2*D66)*(A**2)*(B**2) + D22*(B**4)
 
     a0 = c11*c22 - c12*c12
     a1 = c12*c23 - c13*c22
@@ -81,7 +91,7 @@ def w_o(x, y, precision=3):
     W_new = 1
 
     size = 1
-    while size < 30:
+    while size < 15:
         p = np.floor( -np.log10(np.abs(W_new-W)) )
         if p == np.inf: p = precision
         
@@ -97,7 +107,21 @@ def w_o(x, y, precision=3):
     
         size += 1
 
+    return W_new
 
 np.seterr(divide='ignore')
-w_o(a/2, b/2, precision=5)
+
+
+
+w = []
+
+for x in np.linspace(.4, .5, 20):
+    r = w_o(x, .4, precision=5)
+    w.append(r)
+
+import matplotlib.pyplot as plt
+
+plt.plot(np.linspace(.4, .5, 20), w)
+plt.show()
+
 
